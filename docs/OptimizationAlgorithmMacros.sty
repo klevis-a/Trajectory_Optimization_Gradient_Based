@@ -1,0 +1,83 @@
+\ProvidesPackage{OptimizationAlgorithmMacros}[2020/02/08 Macros for the Gradient-Based Optimization Algorithm]
+\usepackage{xifthen}
+\usepackage{hyperref}
+
+\newcommand{\libParameter}[4][]{
+	\ifthenelse{\isempty{#1}}{\textbf{#2} - #3}{\textbf{#2} (\textbf{#4}) - #3}
+}
+
+\newcommand{\URDFFile}[1][]{
+	\libParameter[#1]{URDF\_File}{File path to the Unified Robotics Description Format (URDF) file for the robot. (e.g. \path{D:\Optimization_Algorithm_Data\m20iag.urdf}).}{P}
+}
+
+\newcommand{\BaseName}[1][]{
+	\libParameter[#1]{BaseName}{The name of the link within the URDF file for the robot representing the base of the robot (e.g. base).}{P}
+}
+
+\newcommand{\EndEffectorName}[1][]{
+	\libParameter[#1]{EndEffectorName}{The name of the link within the URDF file for the robot representing the end-effector of the robot (e.g. tool0).}{P}
+}
+
+\newcommand{\VelocityLimits}[1][]{
+	\libParameter[#1]{VelocityLimits}{A 6 component vector specifiying the velocity limits of each of the six joints of the robot - specified in rad/second.}{P}
+}
+
+\newcommand{\Tolerance}[1][]{
+	\libParameter[#1]{Tolerance}{The joint limit and total positional accuracy tolerance. Typically very small, e.g. 0.001.}{P}
+}
+
+\newcommand{\MajorIterationLimit}[1][]{
+	\libParameter[#1]{MajorIterationLimit}{This parameter sets the \textbf{Major iterations limit} configuration parameter in SNOPT. See \href{https://www-leland.stanford.edu/group/SOL/guides/sndoc7.pdf}{https://www-leland.stanford.edu/group/SOL/guides/sndoc7.pdf}.}{P}
+}
+
+\newcommand{\IterationLimit}[1][]{
+	\libParameter[#1]{IterationLimit}{This parameter sets the \textbf{Iterations limits} configuration parameter in SNOPT. See \href{https://www-leland.stanford.edu/group/SOL/guides/sndoc7.pdf}{https://www-leland.stanford.edu/group/SOL/guides/sndoc7.pdf}.}{P}
+}
+
+\newcommand{\InitPosition}[1][]{
+	\libParameter[#1]{InitPosition}{A 4-component vector specifying an initial guess for the transformation between the motion capture and robot reference frame. The first parameter specifies the rotation about the gravitational axis (z-axis in the formulation of this optimization problem) in radians, and the last 3 parameters specify the translation vector in the units of the UDRF file.}{P}
+}
+
+\newcommand{\CalcInitPosition}[1][]{
+	\libParameter[#1]{CalcInitPosition}{If this parameter is set to \textbf{false} the initial guess for the transformation between the motion capture and robot reference frame is obtained from \textbf{InitPosition}. If this parameter is set to \textbf{true} the initial guess for the transformation is calculated based on the initial guess for the robot joint angles in such a way as to minimize the difference between the workspace trajectory derived from the robot joint angles and the motion capture trajectory.}{P}
+}
+
+\newcommand{\TransformPosBoundLower}[1][]{
+	\libParameter[#1]{TransformPosBoundLower}{A 3-component vector specifying a position lower bound for the transformation between the motion capture and robot reference frame. Specified in the units of the URDF file.}{P}
+}
+
+\newcommand{\TransformPosBoundUpper}[1][]{
+	\libParameter[#1]{TransformPosBoundLower}{A 3-component vector specifying a position upper bound for the transformation between the motion capture and robot reference frame. Specified in the units of the URDF file.}{P}
+}
+
+\newcommand{\TransformRotBoundLower}[1][]{
+	\libParameter[#1]{TransformPosBoundLower}{The lower bound for the angle of rotation (specified in radians) around the gravitational (z-axis for the formulation of the optimization problem) for the transformation between the motion capture and robot reference frame.}{P}
+}
+
+\newcommand{\TransformRotBoundUpper}[1][]{
+	\libParameter[#1]{TransformPosBoundLower}{The upper bound for angle of rotation (specified in radians) around the gravitational (z-axis for the formulation of the optimization problem) for the transformation between the motion capture and robot reference frame.}{P}
+}
+
+\newcommand{\SnoptCLib}[1][]{
+	\libParameter[#1]{Snopt\_C\_Lib}{File path to the SNOPT C interface library created by the \textbf{snopt\_interface} package (e.g. \path{/usr/local/lib/libsnopt7_c.so}).}{P}
+}
+
+\newcommand{\TrajectoryFile}[1][]{
+	\libParameter[#1]{TrajectoryFile}{File path to a frames trajectory file. (e.g. \path{D:\Motion_Capture_Data\JJ\UEK_015\UEK_015_JJ_free_01.smoothFrames.txt}).}{IP}
+}
+
+\newcommand{\TrajectoryFolderSubjects}[1][]{
+	\libParameter[#1]{TrajectoryFolder}{Directory path for a single motion capture activity containing multiple subjects (e.g. \path{D:\Motion_Capture_Data\JJ}).}{IP}
+}
+
+\newcommand{\SeedsFile}[1][]{
+	\libParameter[#1]{SeedsFile}{File path to \path{.csv} file containing initial guesses for the robot joint angles for the first timepoint of the trajectory. (e.g. \path{D:\Optimization_Algorithm_Data\Seeds\jointCombosH.csv}).}{IP}
+}
+
+\newcommand{\Toolframes}[1][]{
+	\libParameter[#1]{Toolframes}{File path to \path{.csv} file containing tool frames to utilize for the optimization algorithm (e.g. \path{D:\Optimization_Algorithm_Data\Toolframes\toolframes30.csv}).}{IP}
+}
+
+\newcommand{\OutputDirectory}[1][]{
+	\libParameter[#1]{OutputDirectory}{Path to a directory where solutions generated by the optimization algorithm should be output (e.g. \path{D:\OptAlgo_Output}).}{IP}
+}

@@ -1,0 +1,155 @@
+\documentclass[letterpaper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{pgffor}
+\usepackage{listings}
+\lstset{
+	language=bash,
+	basicstyle=\ttfamily
+}
+\usepackage{OptimizationAlgorithmMacros}
+\pagestyle{empty}
+
+\title{\textbf{Gradient-Based Optimization Algorithm Implementation User Manual}}
+\author{Klevis Aliaj}
+\date{} % clear date
+
+\newcommand{\packageTask}[5]{
+	\subsection*{#1} \label{#2}
+	\textbf{Description}: #3 \newline
+	\textbf{Executable File}: \path{#4} \newline
+	\textbf{Input Parameters}:
+	\begin{itemize}
+		\foreach \x in #5
+		{
+			\item \x
+		}
+	\end{itemize}
+}
+
+\begin{document}
+\maketitle
+
+\section{Installation} \label{sec:installation}
+\paragraph{}
+The following installation steps have been verified on a fresh installation of Ubuntu 16.04. The gradient-based optimization algorithm implementation utilizes the Sparse Nonlinear OPTimizer (SNOPT) software package. A license and installation executables to utilize this software must first be obtained. Installation instructions for SNOPT 7.5 are provided, however other methods of installing SNOPT should be equally valid. Note that only the SNOPT FORTRAN library is necessary because a C and C++ interface compatible with Pagmo2 is provided by the \textbf{snopt-interface} package provided with the installation scripts.
+
+\subsection{Prepare Robot Operating System}
+\begin{enumerate}
+	\item Install the Robot Operation System (ROS) Kinetic release
+		\begin{enumerate}
+			\item Follow instructions at \href{http://wiki.ros.org/kinetic/Installation/Ubuntu}{\path{http://wiki.ros.org/kinetic/Installation/Ubuntu}}.
+			\item The 'Desktop Install' option will suffice
+		\end{enumerate}
+	\item Create a catkin workspace
+		\begin{enumerate}
+			\item Follow instructions at \href{http://wiki.ros.org/catkin/Tutorials/create_a_workspace}{\path{http://wiki.ros.org/catkin/Tutorials/create_a_workspace}}.
+			\item Although the instructions above say to run \lstinline[language=bash]!source /opt/ros/melodic/setup.bash! since the Kinetic release of ROS is utilized the following command should be run \lstinline[language=bash]!source /opt/ros/kinetic/setup.bash!.
+		\end{enumerate}
+\end{enumerate}
+
+\subsection{Install SNOPT}
+\begin{enumerate}
+	\item Install FORTRAN compiler: \lstinline[language=bash]!sudo apt-get install gfortran!
+	\item Install SNOPT:
+		\begin{enumerate}
+			\item Install autoconf: \lstinline[language=bash]!sudo apt-get install autoconf!
+			\item Switch to SNOPT directory: \lstinline[language=bash]!cd ~/snopt7!
+			\item Configure SNOPT installation: \lstinline[language=bash]!./configure --prefix=/usr/local!
+			\item Built SNOPT: \lstinline[language=bash]!make!
+			\item Install SNOPT libraries: \lstinline[language=bash]!sudo make install!
+		\end{enumerate}
+	\item Test SNOPT (Optional):
+		\begin{enumerate}
+			\item Build SNOPT examples: \lstinline[language=bash]!sudo make examples!
+			\item Run an example problem:
+				\begin{enumerate}
+					\item \lstinline[language=bash]!cd examples!
+					\item \lstinline[language=bash]!./sntoya!
+				\end{enumerate}
+		\end{enumerate}
+\end{enumerate}
+
+\subsection{Install Dependencies}
+\begin{enumerate}
+	\item Clone or download the Gradient-Based Optimization Algorithm repository to \path{~/catkin_ws/src}.
+	\item Install library dependencies
+		\begin{enumerate}
+			\item Copy the installScripts directory from the repository to a path of your choosing and within a terminal window switch to the newly copied directory.
+			\begin{enumerate}
+				\item \lstinline[language=bash]!cp -R ~/catkin_ws/src/OptRepo/installScripts ~/myDir!
+				\item \lstinline[language=bash]!cd ~/myDir/installScripts!
+			\end{enumerate}
+			\item Install NLopt library: \lstinline[language=bash]!./installNLOPT.sh!
+			\item Install Pagmo2 library: \lstinline[language=bash]!./installPagmo2.sh!
+			\item Install Boost (the Boost version included with ROS is not compatible with the \textbf{pagmo\_plugins\_nonfree} dependency installed below): \lstinline[language=bash]!./installBoost.sh!
+			\item Install Git: \lstinline[language=bash]!sudo apt-get install git!
+			\item Install snopt-interface library: \lstinline[language=bash]!./installSNOPTInterface.sh!
+			\item Install pagmo\_plugins\_nonfree library: \lstinline[language=bash]!./installPagmoNonFree.sh!
+		\end{enumerate}
+\end{enumerate}
+
+\subsection{Build the Gradient Based Optimization Algorithm Catkin Package}
+\begin{enumerate}
+	\item Switch to the catkin workspace: \lstinline[language=bash]!cd ~/catkin_ws!
+	\item Overlay the catkin workspace on top of the current environment: \lstinline[language=bash]!source devel/setup.bash!
+	\item Build the catkin workspace: \lstinline[language=bash]!catkin_make!
+\end{enumerate}
+
+\section{Running the Gradient Based Optimization Algorithm}
+\paragraph{}The optimization algorithm package is comprised of 3 executables and 1 shared library. The 3 executables have been created to meet various optimization needs although it is very likely that users will need to create new executables based on the shared library to fit their specific needs. All executables depend on 2 configuration files, whose paths are specified as command line arguments to the executable. The first parameter file to be specified contains robot specifications and generic optimization algorithm parameters. These parameters are described in \nameref{sec:genericConfigFile}. The second parameter file to be specified contains specification on the input to the optimization algorithm, such as the path to the trajectory file, the tool frame to utilize, etc. The parameters in this configuration file are executable specific, so they are described \nameref{sec:taskDesc}.
+
+\paragraph{}Once the catkin workspace has been built as described in \nameref{sec:installation} the shared library will reside in \path{~/catkin_ws/devel/lib} while the executables will reside in \path{~/catkin_ws/devel/lib/OptRepo}. The example below demonstrates how to run the \nameref{singleTrajMultFrames} task but the other task have the same exact syntax.
+
+\begin{enumerate}
+	\item Switch to the executable directory: \lstinline[language=bash]!cd ~/catkin_ws/devel/lib/OptRepo!
+	\item Run the task specifying the full path to both parameter files: \newline \lstinline[language=bash]!./single_solver /full/path/generic_params.xml /full/path/input_params.xml!
+\end{enumerate}
+
+\section{Optimization Algorithm Generic Parameters File} \label{sec:genericConfigFile}
+\begin{itemize}
+	\item \URDFFile
+	\item \EndEffectorName
+	\item \BaseName
+	\item \VelocityLimits
+	\item \Tolerance
+	\item \MajorIterationLimit
+	\item \IterationLimit
+	\item \InitPosition
+	\item \CalcInitPosition
+	\item \TransformPosBoundLower
+	\item \TransformPosBoundUpper
+	\item \TransformRotBoundLower
+	\item \TransformRotBoundUpper
+	\item \SnoptCLib
+\end{itemize}
+
+\section{Task Listings} \label{sec:taskListing}
+\begin{enumerate}
+	\item \hyperref[singleTrajMultFrames]{Single Trajectory Multiple Frames Solver}
+	\item \hyperref[batchSolver]{Batch Solver}
+	\item \hyperref[batchSolverVarSeed]{Variable Seed Batch Solver}
+\end{enumerate}
+
+\section{Task Descriptions} \label{sec:taskDesc}
+\packageTask
+{Single Trajectory Multiple Frames Solver}
+{singleTrajMultFrames}
+{This task optimizes a single trajectory specified in \textbf{TrajectoryFile} and outputs a joint space trajectory for each tool frame specified in \textbf{Toolframes} in the path specified by \textbf{OutputDirectory}. Only the first seed specified in \textbf{SeedsFile} is utilized.}
+{single_solver}
+{{\TrajectoryFile,\SeedsFile,\Toolframes,\OutputDirectory}}
+
+\packageTask
+{Batch Solver}
+{batchSolver}
+{This task optimizes all trajectories for all subjects in the directory specified by \textbf{TrajectoryFolder}. The joint space trajectories are output in the same folder as the trial files. This task only optimizes the first tool frame specified in \textbf{Toolframes} and first seed specified in \textbf{SeedsFile}.}
+{batch_solver_gradient}
+{{\TrajectoryFolderSubjects,\SeedsFile,\Toolframes}}
+
+\packageTask
+{Variable Seed Batch Solver}
+{batchSolverVarSeed}
+{This task is similar to the \nameref{batchSolver} task but the seeds utilized for optimization are defined on a per-trial basis. Similar to \nameref{batchSolver}, it optimizes all trajectories for all subjects in the directory specified by \textbf{TrajectoryFolder}. However, the seeds utilized for optimizing a particular trial are specified in files ending in \path{jointSd.txt}, where d represents a positive integer. For example, to specify the seed to utilize for optimizing the frames trajectory file, \path{UEK_015_JJ_free_01.smoothFrames.txt}, a seeds file with a filename of \path{UEK_015_JJ_free_01.jointsS1.txt} is created in the same directory as the frames trajectory file. To specify a second seed to optimize for the same trial file, a second seeds file with a filename of \path{UEK_015_JJ_free_01.jointsS2.txt} is created in the same directory as the frames trajectory file. Even though multiple seeds may be specified in the seeds file only the first seed is optimized. This task only optimizes the first tool frame specified in \textbf{Toolframes}.}
+{seed_solver}
+{{\TrajectoryFolderSubjects,\Toolframes}}
+\end{document}
