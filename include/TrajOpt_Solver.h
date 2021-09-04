@@ -6,8 +6,9 @@
 #define M20IA_TRAJ_OPT_TRAJOPT_SOLVER_H
 
 #include <string>
-#include <Pagmo_traj_optimization.hpp>
-#include <DataReader.h>
+
+#include "Pagmo_traj_optimization.hpp"
+#include "DataReader.h"
 #include "InputParser.h"
 
 

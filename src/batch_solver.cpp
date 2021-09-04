@@ -2,18 +2,24 @@
 // Created by klevis on 2/14/18.
 //
 
-#include <ConfigParser.h>
-#include <TrajOpt_Solver.h>
+#include <regex>
+#include <iostream>
+
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/replace.hpp>
-#include <regex>
-#include <iostream>
-#include <csv.h>
 
-using namespace std;
-using namespace boost::filesystem;
-using namespace Eigen;
+#include "ConfigParser.h"
+#include "TrajOpt_Solver.h"
+#include "csv.h"
+
+using std::vector;
+using std::cout;
+using std::endl;
+using std::regex_replace;
+using std::regex;
+using boost::filesystem::directory_iterator;
+using boost::filesystem::path;
 
 int main(int argc, char** argv)
 {
@@ -23,10 +29,10 @@ int main(int argc, char** argv)
     io::CSVReader<16> input(inputParser.toolframesFile());
     double t00,t01,t02,t03,t10,t11,t12,t13,t20,t21,t22,t23,t30,t31,t32,t33;
     input.read_row(t00,t01,t02,t03,t10,t11,t12,t13,t20,t21,t22,t23,t30,t31,t32,t33);
-    MatrixXd currentFrame(4, 4);
+    Eigen::MatrixXd currentFrame(4, 4);
     currentFrame << t00, t01, t02, t03, t10, t11, t12, t13, t20, t21, t22, t23, t30, t31, t32, t33;
 
-    const boost::regex my_filter(".*smoothFrames\\.txt");
+    const boost::regex sfFilter(".*smoothFrames\\.txt");
     for(auto i=directory_iterator(inputParser.trajectoryFolder()); i!=directory_iterator(); i++)
     {
         if(is_directory(i->path()))
@@ -34,11 +40,11 @@ int main(int argc, char** argv)
             for(auto j=directory_iterator(i->path()); j!=directory_iterator(); j++)
             {
                 // Skip if not a file
-                if(!is_regular_file( j->status() ) ) continue;
+                if(!boost::filesystem::is_regular_file( j->status())) continue;
 
-                boost::smatch what;
+                boost::smatch match;
                 //skip if the file does not match the filter
-                if(!boost::regex_match( j->path().string(), what, my_filter ) ) continue;
+                if(!boost::regex_match( j->path().string(), match, sfFilter)) continue;
 
                 auto filePath = j->path();
                 auto dir = filePath.parent_path();

@@ -2,10 +2,11 @@
 // Created by klevis on 1/30/18.
 //
 
-#ifndef M20IA_PINV_OPT_ROBOTKDL_H
-#define M20IA_PINV_OPT_ROBOTKDL_H
+#ifndef M20IA_TRAJ_OPT_ROBOTKDL_H
+#define M20IA_TRAJ_OPT_ROBOTKDL_H
 
 #include <string>
+
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
@@ -31,4 +32,4 @@ private:
 };
 
 
-#endif //M20IA_PINV_OPT_ROBOTKDL_H
+#endif //M20IA_TRAJ_OPT_ROBOTKDL_H

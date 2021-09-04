@@ -4,8 +4,9 @@
 
 #include "RobotKDL.h"
 
-using namespace std;
-using namespace Eigen;
+using std::string;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
 //here empty constructor is needed so problem can be initialized empty - see mocap_traj_problem.cpp
 RobotKDL::RobotKDL()
@@ -23,9 +24,10 @@ RobotKDL::RobotKDL(const string &file_name, const string &base, const string &en
     {
         throw std::runtime_error("Could not construct KDL chain.");
     }
-    fk_solver=new KDL::ChainFkSolverPos_recursive(kdl_chain);
+
+    fk_solver = new KDL::ChainFkSolverPos_recursive(kdl_chain);
     jacobian_ = new KDL::Jacobian(kdl_chain.getNrOfJoints());
-    jacobian_solver=new KDL::ChainJntToJacSolver(kdl_chain);
+    jacobian_solver = new KDL::ChainJntToJacSolver(kdl_chain);
 
     urdf::Model model;
     if (!model.initFile(file_name))
@@ -34,7 +36,7 @@ RobotKDL::RobotKDL(const string &file_name, const string &base, const string &en
     }
 
     dof=0;
-    for(map<string,boost::shared_ptr< urdf::Joint >>::iterator it = model.joints_.begin(); it != model.joints_.end(); ++it)
+    for(std::map<string, boost::shared_ptr<urdf::Joint>>::iterator it = model.joints_.begin(); it != model.joints_.end(); ++it)
     {
         if (model.joints_[it->first]->type != urdf::Joint::UNKNOWN && model.joints_[it->first]->type != urdf::Joint::FIXED)
         {
@@ -52,7 +54,7 @@ MatrixXd RobotKDL::getFKFrame(const VectorXd &jointPos) const
     KDL::Frame p_out;
     fk_solver->JntToCart(q,p_out);
 
-    Eigen::MatrixXd frame_(4,4);
+    MatrixXd frame_(4,4);
     frame_.setIdentity();
 
     // translation
@@ -72,19 +74,19 @@ MatrixXd RobotKDL::getFKFrame(const VectorXd &jointPos) const
     return frame_;
 }
 
-MatrixXd RobotKDL::getFKFrame(const vector<double> &jointPos) const
+MatrixXd RobotKDL::getFKFrame(const std::vector<double> &jointPos) const
 {
-    const VectorXd jointPosEigen = Map<const VectorXd>(jointPos.data(),jointPos.size());
+    const VectorXd jointPosEigen = Eigen::Map<const VectorXd>(jointPos.data(),jointPos.size());
     return getFKFrame(jointPosEigen);
 }
 
-Matrix<double, 6, Dynamic> RobotKDL::getJacobian(const std::vector<double> &jointPos) const
+Eigen::Matrix<double, 6, Eigen::Dynamic> RobotKDL::getJacobian(const std::vector<double> &jointPos) const
 {
-    const VectorXd jointPosEigen = Map<const VectorXd>(jointPos.data(),jointPos.size());
+    const VectorXd jointPosEigen = Eigen::Map<const VectorXd>(jointPos.data(),jointPos.size());
     return getJacobian(jointPosEigen);
 };
 
-Matrix<double, 6, Dynamic> RobotKDL::getJacobian(const Eigen::VectorXd &jointPos) const
+Eigen::Matrix<double, 6, Eigen::Dynamic> RobotKDL::getJacobian(const VectorXd &jointPos) const
 {
     KDL::JntArray q(jointPos.size());
     q.data=jointPos;

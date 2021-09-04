@@ -2,12 +2,12 @@
 // Created by klevis on 11/2/17.
 //
 
-#include <Robot_mocap_opt_problem.hpp>
-#include <GeometryUtils.hpp>
+#include "Robot_mocap_opt_problem.h"
+#include "GeometryUtils.h"
 
-using namespace opt_problems;
-using namespace Eigen;
-using namespace std;
+using std::vector;
+using Eigen::VectorXd;
+using Eigen::MatrixXd;
 
 double logisticFun(double velPer)
 {
@@ -21,9 +21,9 @@ Robot_mocap_opt_problem::Robot_mocap_opt_problem(int dummy)
     std::cerr<<"Robot_mocap_opt_problem dummy constructor is initialized, fix me!!!"<<std::endl;
 }
 
-Robot_mocap_opt_problem::Robot_mocap_opt_problem(const RobotKDL robot_kdl, const vector<MatrixXd> frames, const VectorXd dt, const VectorXd vel_limits,
-    const vector<double> &posLB, const vector<double> &posUB, const double rotLB, const double rotUB):
-        _robot_kdl(robot_kdl),_frames(frames),_dt(dt), _vel_limits(vel_limits), _timesteps(frames.size()), _posLB(posLB), _posUB(posUB), _rotLB(rotLB), _rotUB(rotUB)
+Robot_mocap_opt_problem::Robot_mocap_opt_problem(const RobotKDL robot_kdl, const vector<MatrixXd> frames, const VectorXd dt, const VectorXd vel_limits, const vector<double> &posLB, 
+                                                const vector<double> &posUB, const double rotLB, const double rotUB):_robot_kdl(robot_kdl),_frames(frames),_dt(dt), _vel_limits(vel_limits), 
+                                                _timesteps(frames.size()), _posLB(posLB), _posUB(posUB), _rotLB(rotLB), _rotUB(rotUB)
 {
     // Get optimization dimensions from robot kdl and trajectory data
     //robot degree of freedom * number of frames + 4 variables for optimizing starting position and orientation
@@ -262,7 +262,7 @@ vector<double> Robot_mocap_opt_problem::EqConstraints(const vector<double> &x) c
 
     //initial transformation matrix
     MatrixXd init_transform=GeometryUtils::zRotFrame(x0, y0, z0,zrot);
-    const VectorXd j = Map<const VectorXd>(x.data(), x.size());
+    const VectorXd j = Eigen::Map<const VectorXd>(x.data(), x.size());
 
     for(int i=0; i<_timesteps; i++)
     {
@@ -275,8 +275,6 @@ vector<double> Robot_mocap_opt_problem::EqConstraints(const vector<double> &x) c
     ret[0]=cost_val;
     return ret;
 }
-
-
 
 vector<double> Robot_mocap_opt_problem::eqGradient(const vector<double> &x) const
 {
@@ -311,7 +309,7 @@ vector<double> Robot_mocap_opt_problem::eqGradient(const vector<double> &x) cons
 
     //initial transformation matrix
     Eigen::MatrixXd init_transform=GeometryUtils::zRotFrame(x0, y0, z0,zrot);
-    const VectorXd j = Map<const VectorXd>(x.data(), x.size());
+    const VectorXd j = Eigen::Map<const VectorXd>(x.data(), x.size());
 
     for(int i=0; i<_timesteps; i++)
     {
@@ -385,7 +383,6 @@ vector<vector<double>> Robot_mocap_opt_problem::bounds() const
     bound[0]=low_bounds;
     bound[1]=up_bounds;
     return bound;
-
 }
 
 vector<double> Robot_mocap_opt_problem::gradient(const vector<double> &x) const
@@ -419,22 +416,22 @@ vector<double> Robot_mocap_opt_problem::gradient(const vector<double> &x) const
 }
 
 #if SPARSE_GRADIENT==true
-std::vector<std::pair<vector<double>::size_type, vector<double>::size_type>> Robot_mocap_opt_problem::gradient_sparsity() const
+vector<std::pair<vector<double>::size_type, vector<double>::size_type>> Robot_mocap_opt_problem::gradient_sparsity() const
 {
-  std::vector<std::pair<vector<double>::size_type, vector<double>::size_type>> retval;
-  // Objective gradient is dense
-  for (int i=0;i<m_dim;++i)
-  {
-    retval.emplace_back(0,i);
-  }
-  // Equality constraints:
-  for (int i=0;i<m_nec;++i)
-  {
-      for(int j=0;j<m_dim; j++)
-      {
-          retval.emplace_back(i+1,j);
-      }
-  }
+    vector<std::pair<vector<double>::size_type, vector<double>::size_type>> retval;
+    // Objective gradient is dense
+    for (int i=0;i<m_dim;++i)
+    {
+        retval.emplace_back(0,i);
+    }
+    // Equality constraints:
+    for (int i=0;i<m_nec;++i)
+    {
+        for(int j=0;j<m_dim; j++)
+        {
+            retval.emplace_back(i+1,j);
+        }
+    }
     // inequality constraints:
     for(int i=1;i<_timesteps;++i)
     {
@@ -444,8 +441,9 @@ std::vector<std::pair<vector<double>::size_type, vector<double>::size_type>> Rob
             retval.emplace_back(1+m_nec+(i-1)*_robot_kdl.dof+j,(i)*_robot_kdl.dof+j);
         }
     }
-  return retval;
+    return retval;
 }
+
 vector<double> Robot_mocap_opt_problem::sparse_gradient(const vector<double> &x) const {
     vector<double> grad;
     vector<double> obj_grad = objGradient(x);

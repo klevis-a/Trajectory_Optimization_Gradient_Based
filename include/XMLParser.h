@@ -5,9 +5,10 @@
 #ifndef M20IA_TRAJ_OPT_XMLPARSER_H
 #define M20IA_TRAJ_OPT_XMLPARSER_H
 
-#include <tinyxml2.h>
 #include <vector>
 #include <string>
+
+#include <tinyxml2.h>
 
 class XMLParser {
 public:

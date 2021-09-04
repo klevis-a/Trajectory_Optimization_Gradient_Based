@@ -1,3 +1,6 @@
+#ifndef M20IA_TRAJ_OPT_PAGMO_TRAJ_OPTIMIZATION_HPP
+#define M20IA_TRAJ_OPT_PAGMO_TRAJ_OPTIMIZATION_HPP
+
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -9,26 +12,18 @@
 #include <pagmo/io.hpp>
 #include <pagmo/problem.hpp>
 #include <pagmo/types.hpp>
-#include <Robot_mocap_opt_problem.hpp>
-#include <iostream>
+
+#include "Robot_mocap_opt_problem.h"
 
 namespace pagmo {
-    /*
-      Trajectory Optimization problem:
-      min F(X)
-      s.t. G(X)<=0
-    */
     struct Pagmo_traj_optimization {
-        Pagmo_traj_optimization(opt_problems::Robot_mocap_opt_problem robot_opt_problem = opt_problems::Robot_mocap_opt_problem(1),
-                                vector_double::size_type dim = 2, vector_double::size_type nic = 0,
-                                vector_double::size_type nec = 1) : opt_problem(robot_opt_problem), m_dim(dim),
-                                                                    m_nic(nic), m_nec(nec) {
-            //cerr<<"Getting dimensions"<<endl;
+        Pagmo_traj_optimization(Robot_mocap_opt_problem robot_opt_problem = Robot_mocap_opt_problem(1), vector_double::size_type dim = 2, vector_double::size_type nic = 0,
+                                vector_double::size_type nec = 1) : opt_problem(robot_opt_problem), m_dim(dim),m_nic(nic), m_nec(nec) {
+            //std::cerr<<"Getting dimensions"<<std::endl;
             m_dim = opt_problem.m_dim;
             m_nec = opt_problem.m_nec;
             m_nic = opt_problem.m_nic;
-            //cerr<<"Got dimensions"<<endl;
-            // bounds
+            //std::cerr<<"Got dimensions"<<std::endl;
         };
 
 
@@ -75,20 +70,20 @@ namespace pagmo {
         }
 
         vector_double gradient(const vector_double &x) const {
-            //return pagmo::estimate_gradient(fitness , x);
-#if SPARSE_GRADIENT == true
+	    //return pagmo::estimate_gradient(fitness , x);
+            #if SPARSE_GRADIENT == true
             return opt_problem.sparse_gradient(x);
-#else
+            #else
             return opt_problem.gradient(x);
-#endif
+            #endif
         }
 
-#if SPARSE_GRADIENT == true
+        #if SPARSE_GRADIENT == true
         sparsity_pattern gradient_sparsity() const
         {
           return opt_problem.gradient_sparsity();
         }
-#endif
+        #endif
 
         template<typename Archive>
         void serialize(Archive &ar) {
@@ -100,6 +95,8 @@ namespace pagmo {
         vector_double::size_type m_nec;
         vector_double::size_type m_nic;
 
-        opt_problems::Robot_mocap_opt_problem opt_problem;
+        Robot_mocap_opt_problem opt_problem;
     };
 }
+
+#endif //M20IA_TRAJ_OPT_PAGMO_TRAJ_OPTIMIZATION_HPP

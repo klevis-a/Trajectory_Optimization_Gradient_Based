@@ -1,12 +1,14 @@
-#include <GeometryUtils.hpp>
 #include <eigen3/Eigen/Geometry>
 
-using namespace Eigen;
-using namespace std;
+#include "GeometryUtils.h"
+
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+using Eigen::AngleAxisd;
 
 void GeometryUtils::pseudoinverse(const Eigen::MatrixXd &M, Eigen::MatrixXd &Minv, double tolerance)
 {
-    JacobiSVD<MatrixXd> svdOfM(M, ComputeThinU | ComputeThinV);
+    Eigen::JacobiSVD<MatrixXd> svdOfM(M, Eigen::ComputeThinU | Eigen::ComputeThinV);
     const MatrixXd U = svdOfM.matrixU();
     const MatrixXd V = svdOfM.matrixV();
     const VectorXd S = svdOfM.singularValues();
@@ -80,6 +82,6 @@ Eigen::MatrixXd GeometryUtils::zRotFrame(const double x, const double y, const d
     MatrixXd zFrame(4,4);
     zFrame.setIdentity();
     zFrame.topRightCorner<3,1>() << x,y,z;
-    zFrame.topLeftCorner<3,3>() = AngleAxisd(zrot,Vector3d::UnitZ()).toRotationMatrix();
+    zFrame.topLeftCorner<3,3>() = Eigen::AngleAxisd(zrot, Eigen::Vector3d::UnitZ()).toRotationMatrix();
     return zFrame;
 }

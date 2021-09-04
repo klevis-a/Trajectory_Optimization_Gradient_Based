@@ -3,13 +3,16 @@
 //
 
 #include "DataReader.h"
-#include <csv.h>
-#include <GeometryUtils.hpp>
+#include "csv.h"
+#include "GeometryUtils.h"
 
-using namespace std;
-using namespace Eigen;
+using std::vector;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+using Eigen::Vector3d;
+using Eigen::Map;
 
-DataReader::DataReader(const string &trajectoryFile, const string &seedFile, const RobotKDL &kdl, const MatrixXd &tf):_trajFile(trajectoryFile), _seedFile(seedFile), _kdl(kdl), _tf(tf) {
+DataReader::DataReader(const std::string &trajectoryFile, const std::string &seedFile, const RobotKDL &kdl, const MatrixXd &tf):_trajFile(trajectoryFile), _seedFile(seedFile), _kdl(kdl), _tf(tf) {
     readTrajectory();
     readInitialJoints();
 }
@@ -76,7 +79,7 @@ void DataReader::readInitialJoints() {
     //but first let's create the initial guess for starting position and rotation about z
     _initPosGuess = vector<double>(4,0.0);
     //matrix difference between the two frames expressed in world coordinates
-    Matrix3d rotDiff = firstFrame.topLeftCorner<3,3>()*_trajData[0].topLeftCorner<3,3>().transpose();
+    Eigen::Matrix3d rotDiff = firstFrame.topLeftCorner<3,3>()*_trajData[0].topLeftCorner<3,3>().transpose();
     //define x-axis
     Vector3d xaxis;
     xaxis << 1,0,0;
@@ -97,14 +100,14 @@ void DataReader::readInitialJoints() {
     rotAngle = rotAngle*multiplier;
 
     /* we could use euler angles but the problem is that Eigen minimizes the rotation about the first angle
-     * in this case the z-rotation. But in our case this is undesirable because we want to maximize the z rotation
+     * in this case the z-rotation. But in our case this is undesirable because we want to maximize the
      * rotation about z R(z)*R(y)*R(x)
     Vector3d eulAngles = rotDiff.eulerAngles(2,1,0);
      */
 
     _initPosGuess[0]=rotAngle;
     //x y z translation
-    VectorXd offsetTranslation = AngleAxisd(_initPosGuess[0],Vector3d::UnitZ()).toRotationMatrix()*_trajData[0].topRightCorner<3,1>();
+    VectorXd offsetTranslation = Eigen::AngleAxisd(_initPosGuess[0], Vector3d::UnitZ()).toRotationMatrix()*_trajData[0].topRightCorner<3,1>();
     _initPosGuess[1]=firstFrame(0,3)-offsetTranslation[0];
     _initPosGuess[2]=firstFrame(1,3)-offsetTranslation[1];
     _initPosGuess[3]=firstFrame(2,3)-offsetTranslation[2];
@@ -138,7 +141,7 @@ const unsigned int DataReader::timesteps() const {
     return _numFrames;
 }
 
-const std::vector<double> &DataReader::initPosGuess() const {
+const vector<double> &DataReader::initPosGuess() const {
     return _initPosGuess;
 }
 

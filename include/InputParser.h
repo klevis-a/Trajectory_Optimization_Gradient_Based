@@ -4,7 +4,9 @@
 
 #ifndef M20IA_TRAJ_OPT_INPUTPARSER_H
 #define M20IA_TRAJ_OPT_INPUTPARSER_H
+
 #include <string>
+
 #include "XMLParser.h"
 
 class InputParser : XMLParser {

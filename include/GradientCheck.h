@@ -1,6 +1,10 @@
+#ifndef M20IA_TRAJ_OPT_GRADIENTCHECK_H
+#define M20IA_TRAJ_OPT_GRADIENTCHECK_H
+
 #include <vector>
-#include <Robot_mocap_opt_problem.hpp>
 #include <random>
+
+#include "Robot_mocap_opt_problem.h"
 
 class GradientCheck
 {
@@ -16,3 +20,5 @@ private:
     double _tolerance;
     int _total_dof;
 };
+
+#endif //M20IA_TRAJ_OPT_GRADIENTCHECK_H

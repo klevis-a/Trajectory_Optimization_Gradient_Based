@@ -1,15 +1,19 @@
 //
-// Created by klevis on 4/21/18.
+// Created by klevis on 4/18/18.
 //
 
-#include <XMLParser.h>
 #include <stdexcept>
 #include <iostream>
 #include <iterator>
 #include <sstream>
 
-using namespace std;
-using namespace tinyxml2;
+#include "XMLParser.h"
+
+using std::invalid_argument;
+using std::string;
+using tinyxml2::XMLError;
+using tinyxml2::XMLElement;
+using tinyxml2::XML_SUCCESS;
 
 XMLParser::XMLParser(const char *fileName) {
     XMLError xmlResult = _doc.LoadFile(fileName);
@@ -23,7 +27,7 @@ XMLParser::XMLParser(const char *fileName) {
 void XMLParser::XMLCheckResult(XMLError result)
 {
     if (result != XML_SUCCESS) {
-        cout <<  "XML Parsing Error: " << result;
+        std::cerr <<  "XML Parsing Error: " << result;
         throw invalid_argument("XML Parsing Error");
     }
 }
@@ -64,11 +68,11 @@ const char* XMLParser::parseText(const char *paramName) const {
     return element->GetText();
 }
 
-vector<double> XMLParser::stringToVector(const string &line) {
-    istringstream iss(line);
+std::vector<double> XMLParser::stringToVector(const std::string &line) {
+    std::istringstream iss(line);
 
-    return vector<double>{
-            istream_iterator<double>(iss),
-            istream_iterator<double>()
+    return std::vector<double>{
+            std::istream_iterator<double>(iss),
+            std::istream_iterator<double>()
     };
 }

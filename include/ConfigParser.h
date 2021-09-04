@@ -7,7 +7,9 @@
 
 #include <string>
 #include <vector>
+
 #include <tinyxml2.h>
+
 #include "XMLParser.h"
 
 class ConfigParser : XMLParser {

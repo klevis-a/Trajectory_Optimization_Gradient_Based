@@ -2,14 +2,15 @@
 // Created by klevis on 12/7/17.
 //
 
-#include "ConfigParser.h"
-#include <csv.h>
 #include <iostream>
 #include <iterator>
 #include <sstream>
 
-using namespace std;
-using namespace tinyxml2;
+#include "ConfigParser.h"
+#include "csv.h"
+
+using std::vector;
+using std::string;
 
 
 ConfigParser::ConfigParser(const char *fileName) : XMLParser(fileName) {
@@ -34,17 +35,17 @@ ConfigParser::ConfigParser(const char *fileName) : XMLParser(fileName) {
     //whether to calculate the initial position or use the seed
     _calcInitPosition = parseBool("CalcInitPosition");
     //read initial position
-    _initPosition=stringToVector(parseText("InitPosition"));
+    _initPosition = stringToVector(parseText("InitPosition"));
     //position lower bound
-    _posLB=stringToVector(parseText("TransformPosBoundLower"));
+    _posLB = stringToVector(parseText("TransformPosBoundLower"));
     //position upper bound
-    _posUB=stringToVector(parseText("TransformPosBoundUpper"));
+    _posUB = stringToVector(parseText("TransformPosBoundUpper"));
     //z rotation lower bound
-    _rotLB=parseDouble("TransformRotBoundLower");
+    _rotLB = parseDouble("TransformRotBoundLower");
     //z rotation upper bound
-    _rotUB=parseDouble("TransformRotBoundUpper");
+    _rotUB = parseDouble("TransformRotBoundUpper");
     //location of SNOPT_C lib
-    _snoptclib=parseText("Snopt_C_Lib");
+    _snoptclib = parseText("Snopt_C_Lib");
 }
 
 bool ConfigParser::checkGradient() const {
@@ -87,15 +88,15 @@ bool ConfigParser::calcInitPosition() const {
     return _calcInitPosition;
 }
 
-const std::vector<double> &ConfigParser::initPosition() const {
+const vector<double> &ConfigParser::initPosition() const {
     return _initPosition;
 }
 
-const std::vector<double> &ConfigParser::posLB() const {
+const vector<double> &ConfigParser::posLB() const {
     return _posLB;
 }
 
-const std::vector<double> &ConfigParser::posUB() const {
+const vector<double> &ConfigParser::posUB() const {
     return _posUB;
 }
 

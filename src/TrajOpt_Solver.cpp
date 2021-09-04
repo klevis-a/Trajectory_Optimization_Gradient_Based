@@ -2,16 +2,15 @@
 // Created by klevis on 2/14/18.
 //
 
-#include "TrajOpt_Solver.h"
 #include <pagmo_plugins_nonfree/snopt7.hpp>
-#include <CsvWriter.h>
 
-using namespace std;
-using namespace pagmo;
-using namespace Eigen;
+#include "TrajOpt_Solver.h"
+#include "CsvWriter.h"
 
+using std::vector;
+using std::string;
 
-TrajOpt_Solver::TrajOpt_Solver(const ConfigParser &configParser, const string &dataFile, const string &seedsFile, const MatrixXd &toolframe, bool calcInitPos) {
+TrajOpt_Solver::TrajOpt_Solver(const ConfigParser &configParser, const string &dataFile, const string &seedsFile, const Eigen::MatrixXd &toolframe, bool calcInitPos) {
     // initialize kdl class
     RobotKDL kdl(configParser.urdfFile(),configParser.baseName(),configParser.eeName());
     _dof=kdl.dof;
@@ -21,10 +20,9 @@ TrajOpt_Solver::TrajOpt_Solver(const ConfigParser &configParser, const string &d
     _timesteps=dataReader.timesteps();
 
     //create the optimization problem
-    opt_problems::Robot_mocap_opt_problem optProblem(kdl, dataReader.trajectoryData(), dataReader.dt(),
-                                        Map<const VectorXd>(configParser.velLimits().data(), configParser.velLimits().size()),
-    configParser.posLB(), configParser.posUB(), configParser.rotLB(), configParser.rotUB());
-    problem prob{Pagmo_traj_optimization{optProblem}};
+    Robot_mocap_opt_problem optProblem(kdl, dataReader.trajectoryData(), dataReader.dt(), Eigen::Map<const Eigen::VectorXd>(configParser.velLimits().data(), configParser.velLimits().size()), 
+                                        configParser.posLB(), configParser.posUB(), configParser.rotLB(), configParser.rotUB());
+    pagmo::problem prob{pagmo::Pagmo_traj_optimization{optProblem}};
 
     //initial guess
     vector<double> x_in = dataReader.initialJoints();
@@ -42,7 +40,7 @@ TrajOpt_Solver::TrajOpt_Solver(const ConfigParser &configParser, const string &d
     prob.set_c_tol(tol);
 
     //set the solving algorithm
-    snopt7 sn_v(false, configParser.snoptcLib());
+    pagmo::snopt7 sn_v(false, configParser.snoptcLib());
     sn_v.set_verbosity(100);
     sn_v.set_numeric_option("Major feasibility tolerance", configParser.tolerance());
     sn_v.set_integer_option("Major iterations limit", configParser.majorIterLimit());
@@ -55,23 +53,23 @@ TrajOpt_Solver::TrajOpt_Solver(const ConfigParser &configParser, const string &d
     nlopt.set_stopval(configParser.stopValue());
     */
 
-    _algo=algorithm{sn_v};
+    _algo=pagmo::algorithm{sn_v};
     _algo.set_verbosity(100);
-    _pop=population{prob};
+    _pop=pagmo::population{prob};
 
     //send the initial guess to the optimization problem
     vector<double> f_in=prob.fitness(x_in);
     _pop.push_back(x_in,f_in);
 }
 
-TrajOpt_Solver::TrajOpt_Solver(const ConfigParser &configParser, const string &dataFile, const string &seedsFile, const MatrixXd &toolframe) :
+TrajOpt_Solver::TrajOpt_Solver(const ConfigParser &configParser, const string &dataFile, const string &seedsFile, const Eigen::MatrixXd &toolframe) :
     TrajOpt_Solver(configParser, dataFile, seedsFile, toolframe, configParser.calcInitPosition())
 {}
 
 void TrajOpt_Solver::solve() {
     //solve the problem
     _pop_result = _algo.evolve(_pop);
-    cout<<"Final cost:"<<_pop_result.champion_f()[0]<<endl;
+    std::cout<<"Final cost:"<<_pop_result.champion_f()[0]<<std::endl;
 }
 
 void TrajOpt_Solver::printResults(const string &jointsFile, const string &offsetFile) const {

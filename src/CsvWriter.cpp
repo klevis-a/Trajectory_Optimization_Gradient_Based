@@ -2,16 +2,15 @@
 // Created by klevis on 12/9/17.
 //
 
-#include "CsvWriter.h"
 #include <fstream>
 
-using namespace std;
+#include "CsvWriter.h"
 
 CsvWriter::CsvWriter(const std::vector<std::vector<double>> &matrix):_matrix(matrix) {
 }
 
 void CsvWriter::writeToFile(const std::string &file) const {
-    ofstream csvFile;
+    std::ofstream csvFile;
     csvFile.open(file);
 
     for(auto row : _matrix)
@@ -21,7 +20,7 @@ void CsvWriter::writeToFile(const std::string &file) const {
             csvFile << *cell;
             if(cell == (row.end()-1))
             {
-                csvFile << endl;
+                csvFile << std::endl;
             }
             else {
                 csvFile << ",";

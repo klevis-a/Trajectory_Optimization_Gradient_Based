@@ -5,11 +5,13 @@
 #ifndef M20IA_TRAJ_OPT_DATAREADER_H
 #define M20IA_TRAJ_OPT_DATAREADER_H
 
+#include <string>
+
+#include <eigen3/Eigen/Dense>
 
 #include "ConfigParser.h"
 #include "RobotKDL.h"
-#include <eigen3/Eigen/Dense>
-#include <string>
+
 
 class DataReader {
 public:
